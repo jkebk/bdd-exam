@@ -118,12 +118,12 @@ def list_products():
         prods = Product.find_by_category(category)
     elif avail is not None:
         prods = Product.find_by_availability(
-            avail in ['true', 'True', 'TRUE']
+            avail.lower() in ['true', 'yes', '1']
         )
     else:
         prods = Product.all()
 
-    return jsonify([prod.serialize() for prod in prods]), status.HTTP_200_OK
+    return [prod.serialize() for prod in prods], status.HTTP_200_OK
 
 ######################################################################
 # R E A D   A   P R O D U C T
@@ -133,14 +133,16 @@ def list_products():
 @app.route("/products/<int:product_id>", methods=["GET"])
 def get_products(product_id: int):
     """
-   gets one product
+   gets one product based on its ID
     """
+    app.logger.debug("Request to fetch product with id [%s]", product_id)
 
     prod = Product.find(product_id)
     if prod is None:
-        return "", status.HTTP_404_NOT_FOUND
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id {product_id} was not found")
 
-    return jsonify(prod.serialize()), status.HTTP_200_OK
+    app.logger.debug("Returning with id [%s]", product_id)
+    return prod.serialize(), status.HTTP_200_OK
 
 ######################################################################
 # U P D A T E   A   P R O D U C T
@@ -148,25 +150,23 @@ def get_products(product_id: int):
 
 
 @app.route("/products/<int:product_id>", methods=["PUT"])
-def update_product(product_id: int):
+def update_products(product_id: int):
     """
-   updates one product
+    updates one product
     """
-    app.logger.info("Request to update a Product...")
+    app.logger.debug(f"Request to update Product with ID {product_id}")
     check_content_type("application/json")
 
-    if Product.find(product_id) is None:
-        return "", status.HTTP_404_NOT_FOUND
+    product = Product.find(product_id)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id {product_id} was not found")
 
-    data = request.get_json()
-    app.logger.info("Processing: %s", data)
-    product = Product()
-    product.deserialize(data)
+    product.deserialize(request.get_json())
 
     product.id = product_id
     product.update()
 
-    return jsonify(product.serialize()), status.HTTP_200_OK
+    return product.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
@@ -180,8 +180,7 @@ def delete_products(product_id: int):
     """
 
     prod = Product.find(product_id)
-    if prod is None:
-        return "", status.HTTP_404_NOT_FOUND
+    if prod:
+        prod.delete()
 
-    prod.delete()
     return "", status.HTTP_204_NO_CONTENT

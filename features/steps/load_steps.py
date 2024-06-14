@@ -51,7 +51,7 @@ def step_impl(context):
             "name": row['name'],
             "description": row['description'],
             "price": row['price'],
-            "available": True if row['available'] == "True" else False,
+            "available": row['available'].lower() in ["true", "yes", "1"],
             "category": row['category'],
         })
         assert(context.resp.status_code == HTTP_201_CREATED)
