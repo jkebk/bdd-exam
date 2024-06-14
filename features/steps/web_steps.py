@@ -50,6 +50,21 @@ def step_impl(context, text_string):
     element = context.driver.find_element(By.TAG_NAME, 'body')
     assert(text_string not in element.text)
 
+@then('I should see "{message}" as the flash message')
+def step_impl(context, message):
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+    )
+    assert(found)
+
+@when('I press the "{name}" button')
+def step_impl(context, name):
+    element = context.driver.find_element(By.ID, f'{name.lower()}-btn')
+    element.click()
+
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
@@ -132,3 +147,19 @@ def step_impl(context, element_name, text_string):
     )
     element.clear()
     element.send_keys(text_string)
+
+@then('I should see "{name}" in the results')
+def step_impl(context, name):
+    WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.XPATH, "//*[@id='search_results']/table/tbody"))
+    )
+    elements = context.driver.find_elements(By.XPATH, "//*[@id='search_results']/table/tbody/tr")
+    for element in elements:
+        if name in element.text:
+            return
+    assert False, f"didn't find {name} in the results"
+
+@then('I should not see "{name}" in the results')
+def step_impl(context, name):
+    element = context.driver.find_element_by_id('search_results')
+    assert name not in element.text, f"found {name} in the results"
