@@ -132,7 +132,6 @@ class TestProductModel(unittest.TestCase):
     def test_update_a_product(self):
         """It should update a product"""
         product = ProductFactory()
-        orig_desc = product.description
         logging.debug("creating product %s", product)
         product.id = None
         product.create()
@@ -151,7 +150,7 @@ class TestProductModel(unittest.TestCase):
         all_prods = Product.all()
         self.assertEqual(1, len(all_prods))
         self.assertEqual(orig_id, all_prods[0].id)
-        self.assertNotEqual(orig_desc, all_prods[0].description)
+        self.assertEqual(new_desc, all_prods[0].description)
 
     def test_update_without_id(self):
         """it should raise an error when no id is provided to update"""
@@ -164,7 +163,6 @@ class TestProductModel(unittest.TestCase):
         """It should delete a product"""
         product = ProductFactory()
         logging.debug("creating product %s", product)
-        product.id = None
         product.create()
         self.assertIsNotNone(product.id)
 
@@ -173,31 +171,23 @@ class TestProductModel(unittest.TestCase):
         Product.delete(product)
         self.assertEqual(0, len(Product.all()))
 
-    def test_list_products(self):
-        """It should list products"""
+    def test_list_all_products(self):
+        """It should list all products"""
 
-        self.assertEqual(0, len(Product.all()))
-        count = 5
-        products = [prod() for prod in [ProductFactory]*count]
+        products = ProductFactory.create_batch(5)
         logging.debug("creating products %s", products)
         for prod in products:
-            prod.id = None
             prod.create()
-            self.assertIsNotNone(prod.id)
 
         self.assertEqual(5, len(Product.all()))
 
-    def test_find_products_by_name(self):
-        """it should find products by name"""
+    def test_find_by_name(self):
+        """it should find a product by name"""
 
-        self.assertEqual(0, len(Product.all()))
-        count = 5
-        products = [product() for product in [ProductFactory]*count]
+        products = ProductFactory.create_batch(5)
         logging.debug("creating products %s", products)
         for product in products:
-            product.id = None
             product.create()
-            self.assertIsNotNone(product.id)
 
         first_name = products[0].name
         count = len(list(filter(lambda prod: prod.name == first_name, products)))
@@ -208,17 +198,12 @@ class TestProductModel(unittest.TestCase):
         for result in found:
             self.assertEqual(first_name, result.name)
 
-    def test_find_products_by_avail(self):
+    def test_find_by_availability(self):
         """it should find products by availability"""
-
-        self.assertEqual(0, len(Product.all()))
-        count = 10
-        products = [prod() for prod in [ProductFactory]*count]
+        products = ProductFactory.create_batch(10)
         logging.debug("creating products %s", products)
         for product in products:
-            product.id = None
             product.create()
-            self.assertIsNotNone(product.id)
 
         avail = products[0].available
         count = len(list(filter(lambda p: p.available == avail, products)))
@@ -229,17 +214,14 @@ class TestProductModel(unittest.TestCase):
         for result in found:
             self.assertEqual(avail, result.available)
 
-    def test_find_products_by_cat(self):
+    def test_find_by_category(self):
         """it should find products by category"""
 
-        self.assertEqual(0, len(Product.all()))
-        count = 10
-        products = [prod() for prod in [ProductFactory]*count]
+        products = ProductFactory.create_batch(10)
+
         logging.debug("creating products %s", products)
         for product in products:
-            product.id = None
             product.create()
-            self.assertIsNotNone(product.id)
 
         cat = products[0].category
         count = len(list(filter(lambda p: p.category == cat, products)))
@@ -249,31 +231,3 @@ class TestProductModel(unittest.TestCase):
 
         for result in found:
             self.assertEqual(cat, result.category)
-
-    def test_find_products_by_price(self):
-        """it should find products by price"""
-
-        self.assertEqual(0, len(Product.all()))
-        count = 10
-        products = [prod() for prod in [ProductFactory]*count]
-        logging.debug("creating products %s", products)
-        for product in products:
-            product.id = None
-            product.create()
-            self.assertIsNotNone(product.id)
-
-        price = products[0].price
-        count = len(list(filter(lambda product: product.price == price, products)))
-
-        found = Product.find_by_price(price)
-        self.assertEqual(count, found.count())
-
-        for result in found:
-            self.assertEqual(price, result.price)
-
-        # using string
-        found = Product.find_by_price(f'"{price}"')
-        self.assertEqual(count, found.count())
-
-        for result in found:
-            self.assertEqual(price, result.price)

@@ -11,12 +11,13 @@ Feature: The product store service back-end
             | Big Mac | 1/4 lb burger   | 5.99   | True      | FOOD       |
             | Sheets  | Full bed sheets | 87.00  | True      | HOUSEWARES |
 
-    Scenario: The server is running
-        When I visit the "Home Page"
-        Then I should see "Product Catalog Administration" in the title
-        And I should not see "404 Not Found"
+    # Excluding this one since only seven scenarios are allowed
+    # Scenario: The server is running
+    #     When I visit the "Home Page"
+    #     Then I should see "Product Catalog Administration" in the title
+    #     And I should not see "404 Not Found"
 
-    # should include only seven scenarios, not the provided one
+    # Excluding this one since only seven scenarios are allowed
     # Scenario: Create a Product
     #     When I visit the "Home Page"
     #     And I set the "Name" to "Hammer"
@@ -55,6 +56,27 @@ Feature: The product store service back-end
         And I should see "True" in the "Available" dropdown
         And I should see "Cloths" in the "Category" dropdown
         And I should see "59.95" in the "Price" field
+
+    Scenario: Update a Product
+        When I visit the "Home Page"
+        And I set the "Name" to "Hat"
+        And I press the "Search" button
+        Then I should see "Success" as the flash message
+        And I should see "A red fedora" in the "Description" field
+        When I change "Name" to "Fedora"
+        And I press the "Update" button
+        Then I should see "Success" as the flash message
+        When I copy the "Id" field
+        And I press the "Clear" button
+        And I paste the "Id" field
+        And I press the "Retrieve" button
+        Then I should see "Success" as the flash message
+        And I should see "Fedora" in the "Name" field
+        When I press the "Clear" button
+        And I press the "Search" button
+        Then I should see "Success" as the flash message
+        And I should see "Fedora" in the results
+        And I should not see "Hat" in the results
 
     Scenario: Delete a Product
         When I visit the "Home Page"

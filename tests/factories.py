@@ -32,7 +32,7 @@ class ProductFactory(factory.Factory):
 
     id = factory.Sequence(lambda n: n)
     name = FuzzyChoice(["football", "soap", "book"])
-    description = FuzzyChoice(["very durable", "good read", "cleans well"])
+    description = factory.Faker("text")
     price = FuzzyDecimal(0.5, 42, 3)
     available = FuzzyChoice([True, False])
     category = FuzzyChoice(Category)
